@@ -23,8 +23,11 @@
     <div class="p-4">
       <h3 class="font-semibold text-gray-900 mb-2">{{ name }}</h3>
       <div class="flex items-center justify-between">
-        <p class="text-lg font-bold text-gray-900">{{ price }}</p>
-        <button class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded text-sm transition-colors flex items-center gap-1">
+        <p class="text-lg font-bold text-gray-900">{{ formatPrice(price) }}</p>
+        <button
+          @click="handleAddToCart"
+          class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded text-sm transition-colors flex items-center gap-1"
+        >
           <span>+</span>
           <span>Ajouter</span>
         </button>
@@ -34,20 +37,42 @@
 </template>
 
 <script setup>
-defineProps({
+import { useCart } from '@/composables/useCart'
+
+const props = defineProps({
+  id: {
+    type: [String, Number],
+    required: true
+  },
   name: {
     type: String,
     required: true
   },
   price: {
-    type: String,
+    type: Number,
     required: true
   },
   type: {
     type: String,
     default: 'pizza'
+  },
+  image: {
+    type: String,
+    default: null
   }
 })
+
+const { addToCart, formatPrice } = useCart()
+
+const handleAddToCart = () => {
+  addToCart({
+    id: props.id,
+    name: props.name,
+    price: props.price,
+    type: props.type,
+    image: props.image
+  })
+}
 </script>
 
 <style scoped>

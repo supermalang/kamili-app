@@ -8,41 +8,49 @@
       <!-- Product Grid -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <ProductCard
+          id="1"
           name="L'Americain Beef"
-          price="1.500 F"
+          :price="1500"
           type="burger"
         />
         <ProductCard
+          id="2"
           name="Pizza Reine"
-          price="1.500 F"
+          :price="1500"
           type="pizza"
         />
         <ProductCard
+          id="3"
           name="L'Americain Beef"
-          price="1.500 F"
+          :price="1500"
           type="burger"
         />
         <ProductCard
+          id="4"
           name="Pizza Reine"
-          price="1.500 F"
+          :price="1500"
           type="pizza"
         />
       </div>
 
       <!-- View All Button -->
       <div class="text-center">
-        <button class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded inline-flex items-center gap-2 transition-colors">
+        <RouterLink
+          to="/menu"
+          class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded inline-flex items-center gap-2 transition-colors"
+        >
           <span>Voir toute la carte</span>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
-        </button>
+        </RouterLink>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router'
 import ProductCard from './ProductCard.vue'
 </script>
 

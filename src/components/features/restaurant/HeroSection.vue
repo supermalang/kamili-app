@@ -8,10 +8,13 @@
             CHICAGO<br />
             PIZZA KING
           </h2>
-          <p class="text-sm mb-6 opacity-90">à partir de 3000 f</p>
-          <button class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded transition-colors">
+          <p class="text-sm mb-6 opacity-90">à partir de 3000 FCFA</p>
+          <RouterLink
+            to="/menu"
+            class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded transition-colors"
+          >
             Voir le menu
-          </button>
+          </RouterLink>
         </div>
 
         <!-- Restaurant Image -->
@@ -39,6 +42,7 @@
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router'
 </script>
 
 <style scoped>
