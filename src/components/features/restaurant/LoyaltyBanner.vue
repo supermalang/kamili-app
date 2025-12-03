@@ -4,7 +4,7 @@
       <div class="flex flex-col md:flex-row items-center justify-between gap-8">
         <!-- Content -->
         <div class="flex-1 text-white text-center md:text-left">
-          <h2 class="text-2xl md:text-3xl font-bold mb-4">
+          <h2 class="mb-4 uppercase" style="font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 20px; line-height: 54px; letter-spacing: 0; text-align: center; vertical-align: middle;">
             Chaque commande = des points !
           </h2>
           <p class="text-base md:text-lg mb-6 opacity-95">
