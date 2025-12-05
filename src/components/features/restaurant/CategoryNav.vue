@@ -1,9 +1,9 @@
 <template>
   <div class="py-6" style="background-color: #ECECEC;">
     <div class="max-w-7xl mx-auto px-4">
-      <h3 class="text-center text-sm font-semibold mb-4 uppercase tracking-wide">
+      <h2 class="text-center uppercase mb-8" style="font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 20px; line-height: 54px; letter-spacing: 0;">
         Commandez Maintenant
-      </h3>
+      </h2>
 
       <div
         ref="carouselContainer"
@@ -28,14 +28,14 @@
             :to="{ path: '/menu', query: { category: category.slug } }"
             class="flex flex-col items-center gap-2 flex-shrink-0 group category-item"
           >
-            <div class="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
+            <div class="flex items-center justify-center category-image-container">
               <img
                 :src="category.image"
                 :alt="category.name"
-                class="w-20 h-20 md:w-24 md:h-24 object-contain"
+                class="w-full h-full object-contain"
               />
             </div>
-            <span class="text-xs font-semibold uppercase text-center">{{ category.name }}</span>
+            <span class="text-xs md:text-sm font-semibold uppercase text-center category-label">{{ category.name }}</span>
           </RouterLink>
         </div>
       </div>
@@ -81,17 +81,16 @@ const dragOffset = ref(0)
 // Calculate item width based on screen size
 const getItemWidth = () => {
   if (typeof window === 'undefined') return 100
-  const isMobile = window.innerWidth < 768
-  const gap = 16 // gap-4 = 16px
-  const containerPadding = 32 // px-4 on both sides
-  const availableWidth = Math.min(window.innerWidth - containerPadding, 1280 - containerPadding) // max-w-7xl
+  const isLarge = window.innerWidth >= 1024
+  const isMedium = window.innerWidth >= 768
 
-  if (isMobile) {
-    // Show 4 items on mobile
-    return (availableWidth - (gap * 3)) / 4
+  // Base image sizes
+  if (isLarge) {
+    return 140 // Large screens: 140px images
+  } else if (isMedium) {
+    return 120 // Medium screens: 120px images
   } else {
-    // Show 6 items on desktop
-    return (availableWidth - (gap * 5)) / 6
+    return 80 // Small screens: 80px images
   }
 }
 
@@ -237,5 +236,34 @@ onUnmounted(() => {
 
 .category-item:active {
   cursor: grabbing;
+}
+
+.category-image-container {
+  width: 80px;
+  height: 80px;
+}
+
+@media (min-width: 768px) {
+  .category-image-container {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-image-container {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+.category-label {
+  max-width: 100px;
+}
+
+@media (min-width: 768px) {
+  .category-label {
+    max-width: 140px;
+  }
 }
 </style>
