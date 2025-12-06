@@ -1,12 +1,13 @@
 import axios from 'axios'
 import qs from 'qs'
+import { getEnv } from '@/utils/env'
 
 /**
  * Strapi API Configuration
  */
 const config = {
-  url: import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337',
-  apiToken: import.meta.env.VITE_STRAPI_API_TOKEN || ''
+  url: getEnv('VITE_STRAPI_URL', 'http://localhost:1337'),
+  apiToken: getEnv('VITE_STRAPI_API_TOKEN', '')
 }
 
 /**
