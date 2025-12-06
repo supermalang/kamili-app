@@ -25,7 +25,7 @@
           <RouterLink
             v-for="(category, index) in displayCategories"
             :key="`${category.slug}-${index}`"
-            :to="{ path: '/menu', query: { category: category.slug } }"
+            :to="{ path: '/articles', query: { category: category.slug } }"
             class="flex flex-col items-center gap-2 flex-shrink-0 group category-item"
           >
             <div class="flex items-center justify-center category-image-container">
@@ -46,28 +46,41 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import pizzasImg from '@/assets/images/menu-categories/pizzas.png'
-import baguettesImg from '@/assets/images/menu-categories/baguettes.png'
-import sandwichVegetarienImg from '@/assets/images/menu-categories/sandwich_vegetarien.png'
-import snacksImg from '@/assets/images/menu-categories/snacks.png'
-import tacosImg from '@/assets/images/menu-categories/tacos.png'
+import { useCategories } from '@/composables/useStrapi'
 
-const categories = [
-  { name: 'Pizzas', slug: 'pizzas', image: pizzasImg },
-  { name: 'Baguettes', slug: 'baguettes', image: baguettesImg },
-  { name: 'Sandwich Végétarien', slug: 'sandwich-vegetarien', image: sandwichVegetarienImg },
-  { name: 'Snacks', slug: 'snacks', image: snacksImg },
-  { name: 'Tacos', slug: 'tacos', image: tacosImg }
-]
+const { categories: strapiCategories, fetchCategories } = useCategories()
+const strapiUrl = import.meta.env.VITE_STRAPI_URL
 
-// Create infinite loop by tripling the categories
+// Transform Strapi categories to the format needed by the carousel
+const categories = computed(() => {
+  return strapiCategories.value.map(cat => {
+    const imageData = cat.attributes?.image?.data
+    let imageUrl = null
+
+    if (imageData) {
+      const url = imageData.attributes?.url
+      if (url) {
+        imageUrl = url.startsWith('http') ? url : `${strapiUrl}${url}`
+      }
+    }
+
+    return {
+      name: cat.attributes.name,
+      slug: cat.attributes.slug || cat.attributes.name.toLowerCase().replace(/\s+/g, '-'),
+      image: imageUrl
+    }
+  })
+})
+
+// Create infinite loop by quintupling the categories for smoother infinite scroll
 const displayCategories = computed(() => {
-  return [...categories, ...categories, ...categories]
+  const cats = categories.value
+  return [...cats, ...cats, ...cats, ...cats, ...cats]
 })
 
 const carouselContainer = ref(null)
 const carouselTrack = ref(null)
-const currentIndex = ref(categories.length) // Start at the middle set
+const currentIndex = ref(0) // Will be set after categories load
 const currentOffset = ref(0)
 const isResetting = ref(false)
 let autoSlideInterval = null
@@ -117,10 +130,10 @@ const slideNext = () => {
   slideToIndex(nextIndex)
 
   // Check if we need to reset to create infinite loop
-  // If we've moved past the second set, instantly reset to the first set
+  // If we've moved past the 3rd set, instantly reset to the 2nd set
   setTimeout(() => {
-    if (currentIndex.value >= categories.length * 2) {
-      const equivalentIndex = currentIndex.value - categories.length
+    if (currentIndex.value >= categories.value.length * 3) {
+      const equivalentIndex = currentIndex.value - categories.value.length
       slideToIndex(equivalentIndex, true)
     }
   }, 500) // Wait for transition to complete
@@ -171,8 +184,8 @@ const handleTouchEnd = () => {
 
       // Check if we need to reset for infinite loop going backwards
       setTimeout(() => {
-        if (currentIndex.value < categories.length) {
-          const equivalentIndex = currentIndex.value + categories.length
+        if (currentIndex.value < categories.value.length * 2) {
+          const equivalentIndex = currentIndex.value + categories.value.length
           slideToIndex(equivalentIndex, true)
         }
       }, 500)
@@ -216,10 +229,21 @@ const handleResize = () => {
   }, 100)
 }
 
-onMounted(() => {
-  // Initialize position to middle set
-  slideToIndex(categories.length, true)
-  startAutoSlide()
+onMounted(async () => {
+  // Fetch categories first
+  await fetchCategories({
+    populate: ['image']
+  })
+
+  // Wait for next tick to ensure DOM is updated
+  await new Promise(resolve => setTimeout(resolve, 0))
+
+  // Initialize position to middle set (position 2 out of 5 sets)
+  if (categories.value.length > 0) {
+    slideToIndex(categories.value.length * 2, true)
+    startAutoSlide()
+  }
+
   window.addEventListener('resize', handleResize)
 })
 

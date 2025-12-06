@@ -34,7 +34,7 @@ export function useStrapi() {
     loading,
     error,
     execute,
-    strapi: strapiService
+    strapi: strapiService,
   }
 }
 
@@ -51,11 +51,13 @@ export function useProducts() {
    * @param {Object} params - Query parameters
    */
   const fetchProducts = async (params = {}) => {
-    const data = await execute(() => strapi.products.find({
-      populate: ['category', 'image'],
-      sort: ['createdAt:desc'],
-      ...params
-    }))
+    const data = await execute(() =>
+      strapi.products.find({
+        populate: ['categories', 'image'],
+        sort: ['createdAt:desc'],
+        ...params,
+      }),
+    )
     products.value = data
     return data
   }
@@ -65,9 +67,11 @@ export function useProducts() {
    * @param {String|Number} id - Product ID
    */
   const fetchProduct = async (id) => {
-    const data = await execute(() => strapi.products.findOne(id, {
-      populate: ['category', 'image']
-    }))
+    const data = await execute(() =>
+      strapi.products.findOne(id, {
+        populate: ['categories', 'image'],
+      }),
+    )
     product.value = data
     return data
   }
@@ -77,9 +81,11 @@ export function useProducts() {
    * @param {String|Number} categoryId - Category ID
    */
   const fetchProductsByCategory = async (categoryId) => {
-    const data = await execute(() => strapi.products.findByCategory(categoryId, {
-      populate: ['image']
-    }))
+    const data = await execute(() =>
+      strapi.products.findByCategory(categoryId, {
+        populate: ['image'],
+      }),
+    )
     products.value = data
     return data
   }
@@ -89,9 +95,11 @@ export function useProducts() {
    * @param {String} type - Product type
    */
   const fetchProductsByType = async (type) => {
-    const data = await execute(() => strapi.products.findByType(type, {
-      populate: ['category', 'image']
-    }))
+    const data = await execute(() =>
+      strapi.products.findByType(type, {
+        populate: ['categories', 'image'],
+      }),
+    )
     products.value = data
     return data
   }
@@ -104,7 +112,7 @@ export function useProducts() {
     fetchProducts,
     fetchProduct,
     fetchProductsByCategory,
-    fetchProductsByType
+    fetchProductsByType,
   }
 }
 
@@ -120,11 +128,12 @@ export function useCategories() {
    * Fetch all categories
    */
   const fetchCategories = async (params = {}) => {
-    const data = await execute(() => strapi.categories.find({
-      populate: ['products'],
-      sort: ['order:asc'],
-      ...params
-    }))
+    const data = await execute(() =>
+      strapi.categories.find({
+        populate: ['products'],
+        ...params,
+      }),
+    )
     categories.value = data
     return data
   }
@@ -134,9 +143,11 @@ export function useCategories() {
    * @param {String|Number} id - Category ID
    */
   const fetchCategory = async (id) => {
-    const data = await execute(() => strapi.categories.findOne(id, {
-      populate: ['products']
-    }))
+    const data = await execute(() =>
+      strapi.categories.findOne(id, {
+        populate: ['products'],
+      }),
+    )
     category.value = data
     return data
   }
@@ -147,7 +158,7 @@ export function useCategories() {
     loading,
     error,
     fetchCategories,
-    fetchCategory
+    fetchCategory,
   }
 }
 
@@ -173,11 +184,13 @@ export function useOrders() {
    * Fetch user orders
    */
   const fetchOrders = async (params = {}) => {
-    const data = await execute(() => strapi.orders.find({
-      populate: ['items', 'items.product'],
-      sort: ['createdAt:desc'],
-      ...params
-    }))
+    const data = await execute(() =>
+      strapi.orders.find({
+        populate: ['items', 'items.product'],
+        sort: ['createdAt:desc'],
+        ...params,
+      }),
+    )
     orders.value = data
     return data
   }
@@ -187,9 +200,11 @@ export function useOrders() {
    * @param {String|Number} id - Order ID
    */
   const fetchOrder = async (id) => {
-    const data = await execute(() => strapi.orders.findOne(id, {
-      populate: ['items', 'items.product', 'customer']
-    }))
+    const data = await execute(() =>
+      strapi.orders.findOne(id, {
+        populate: ['items', 'items.product', 'customer'],
+      }),
+    )
     order.value = data
     return data
   }
@@ -201,7 +216,7 @@ export function useOrders() {
     error,
     createOrder,
     fetchOrders,
-    fetchOrder
+    fetchOrder,
   }
 }
 
@@ -216,9 +231,11 @@ export function useRestaurantSettings() {
    * Fetch restaurant settings
    */
   const fetchSettings = async () => {
-    const data = await execute(() => strapi.settings.get({
-      populate: ['heroImage', 'heroBackgroundImage', 'address']
-    }))
+    const data = await execute(() =>
+      strapi.settings.get({
+        populate: ['heroImage', 'heroBackgroundImage', 'address'],
+      }),
+    )
     settings.value = data
     return data
   }
@@ -227,7 +244,7 @@ export function useRestaurantSettings() {
     settings,
     loading,
     error,
-    fetchSettings
+    fetchSettings,
   }
 }
 
@@ -242,9 +259,11 @@ export function usePaymentMethods() {
    * Fetch payment methods
    */
   const fetchPaymentMethods = async () => {
-    const data = await execute(() => strapi.paymentMethods.find({
-      populate: ['logo']
-    }))
+    const data = await execute(() =>
+      strapi.paymentMethods.find({
+        populate: ['logo'],
+      }),
+    )
     paymentMethods.value = data
     return data
   }
@@ -253,6 +272,6 @@ export function usePaymentMethods() {
     paymentMethods,
     loading,
     error,
-    fetchPaymentMethods
+    fetchPaymentMethods,
   }
 }

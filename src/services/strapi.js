@@ -1,4 +1,5 @@
-import { Strapi } from '@strapi/sdk-plugin'
+import axios from 'axios'
+import qs from 'qs'
 
 /**
  * Strapi API Configuration
@@ -9,31 +10,32 @@ const config = {
 }
 
 /**
- * Initialize Strapi SDK instance
+ * Create axios instance for Strapi API
  */
-const strapi = new Strapi({
-  url: config.url,
-  apiToken: config.apiToken,
-  axios: {
-    headers: {
-      'Content-Type': 'application/json'
-    }
+const api = axios.create({
+  baseURL: `${config.url}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+    ...(config.apiToken && { Authorization: `Bearer ${config.apiToken}` })
   }
 })
+
+/**
+ * Build query string from parameters
+ * @param {Object} params - Query parameters
+ * @returns {string} Query string
+ */
+const buildQueryString = (params) => {
+  if (!params || Object.keys(params).length === 0) return ''
+
+  return `?${qs.stringify(params, { encodeValuesOnly: true })}`
+}
 
 /**
  * Strapi API Service
  * Provides methods to interact with Strapi backend
  */
 export const strapiService = {
-  /**
-   * Get the Strapi instance
-   * @returns {Strapi} Strapi instance
-   */
-  getInstance() {
-    return strapi
-  },
-
   /**
    * Get configuration
    * @returns {Object} Configuration object
@@ -50,7 +52,9 @@ export const strapiService = {
      * @returns {Promise} Products data
      */
     async find(params = {}) {
-      return strapi.find('products', params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/products${queryString}`)
+      return response.data
     },
 
     /**
@@ -60,7 +64,9 @@ export const strapiService = {
      * @returns {Promise} Product data
      */
     async findOne(id, params = {}) {
-      return strapi.findOne('products', id, params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/products/${id}${queryString}`)
+      return response.data
     },
 
     /**
@@ -70,16 +76,17 @@ export const strapiService = {
      * @returns {Promise} Products data
      */
     async findByCategory(categoryId, params = {}) {
-      return strapi.find('products', {
+      const mergedParams = {
         filters: {
-          category: {
+          categories: {
             id: {
               $eq: categoryId
             }
           }
         },
         ...params
-      })
+      }
+      return this.find(mergedParams)
     },
 
     /**
@@ -89,14 +96,15 @@ export const strapiService = {
      * @returns {Promise} Products data
      */
     async findByType(type, params = {}) {
-      return strapi.find('products', {
+      const mergedParams = {
         filters: {
           type: {
             $eq: type
           }
         },
         ...params
-      })
+      }
+      return this.find(mergedParams)
     }
   },
 
@@ -108,7 +116,9 @@ export const strapiService = {
      * @returns {Promise} Categories data
      */
     async find(params = {}) {
-      return strapi.find('categories', params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/categories${queryString}`)
+      return response.data
     },
 
     /**
@@ -118,7 +128,9 @@ export const strapiService = {
      * @returns {Promise} Category data
      */
     async findOne(id, params = {}) {
-      return strapi.findOne('categories', id, params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/categories/${id}${queryString}`)
+      return response.data
     }
   },
 
@@ -130,7 +142,8 @@ export const strapiService = {
      * @returns {Promise} Created order
      */
     async create(data) {
-      return strapi.create('orders', { data })
+      const response = await api.post('/orders', { data })
+      return response.data
     },
 
     /**
@@ -139,7 +152,9 @@ export const strapiService = {
      * @returns {Promise} Orders data
      */
     async find(params = {}) {
-      return strapi.find('orders', params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/orders${queryString}`)
+      return response.data
     },
 
     /**
@@ -149,7 +164,9 @@ export const strapiService = {
      * @returns {Promise} Order data
      */
     async findOne(id, params = {}) {
-      return strapi.findOne('orders', id, params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/orders/${id}${queryString}`)
+      return response.data
     }
   },
 
@@ -161,7 +178,7 @@ export const strapiService = {
      * @returns {Promise} Payment methods data
      */
     async find(params = {}) {
-      return strapi.find('payment-methods', {
+      const mergedParams = {
         filters: {
           isEnabled: {
             $eq: true
@@ -169,7 +186,10 @@ export const strapiService = {
         },
         sort: ['order:asc'],
         ...params
-      })
+      }
+      const queryString = buildQueryString(mergedParams)
+      const response = await api.get(`/payment-methods${queryString}`)
+      return response.data
     }
   },
 
@@ -181,7 +201,9 @@ export const strapiService = {
      * @returns {Promise} Settings data
      */
     async get(params = {}) {
-      return strapi.find('restaurant-settings', params)
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/restaurant-settings${queryString}`)
+      return response.data
     }
   },
 
@@ -194,7 +216,7 @@ export const strapiService = {
      * @returns {Promise} Loyalty program data
      */
     async get(userId, params = {}) {
-      return strapi.find('loyalty-programs', {
+      const mergedParams = {
         filters: {
           user: {
             id: {
@@ -203,7 +225,10 @@ export const strapiService = {
           }
         },
         ...params
-      })
+      }
+      const queryString = buildQueryString(mergedParams)
+      const response = await api.get(`/loyalty-programs${queryString}`)
+      return response.data
     }
   }
 }

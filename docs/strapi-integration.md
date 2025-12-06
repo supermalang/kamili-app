@@ -16,11 +16,13 @@ This guide explains how to use the Strapi SDK integration in the Kamili App Vue.
 
 ### 1. Install Dependencies
 
-The Strapi SDK is already installed in the project:
+The required packages are already installed in the project:
 
 ```bash
-npm install @strapi/sdk-plugin
+npm install axios qs
 ```
+
+We use `axios` for HTTP requests and `qs` for building Strapi-compatible query strings.
 
 ### 2. Environment Configuration
 
