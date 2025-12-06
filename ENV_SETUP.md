@@ -1,0 +1,169 @@
+# Environment Variables Setup
+
+This document explains how environment variables are handled in the Kamili App for both development and production (Docker) deployments.
+
+## Environment Variables
+
+The application uses the following environment variables:
+
+- `VITE_STRAPI_URL` - URL of the Strapi backend API
+- `VITE_STRAPI_API_TOKEN` - API token for Strapi authentication
+- `VITE_APP_NAME` - Application name (default: "Kamili App")
+- `VITE_APP_URL` - Public URL where the app is hosted
+
+## Development Setup
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update the values in `.env` with your local configuration
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Production Docker Setup
+
+### GitHub Actions Setup
+
+The Docker build process requires GitHub Secrets to be configured:
+
+1. Go to your repository Settings → Secrets and variables → Actions
+2. Add the following secrets:
+   - `DOCKERHUB_USERNAME` - Your Docker Hub username
+   - `DOCKERHUB_TOKEN` - Your Docker Hub access token
+   - `VITE_STRAPI_URL` - Production Strapi URL
+   - `VITE_STRAPI_API_TOKEN` - Production Strapi API token
+   - `VITE_APP_NAME` - Production app name (optional)
+   - `VITE_APP_URL` - Production app URL
+
+### How It Works
+
+The Docker build process handles environment variables in two ways:
+
+#### 1. Build-time Variables (Baked into the build)
+- Environment variables are passed as build arguments during `docker build`
+- Vite embeds these values into the compiled JavaScript during the build process
+- This happens at build time in the GitHub Actions workflow
+
+#### 2. Runtime Variables (For container deployment)
+- The Docker image also supports runtime environment variable injection
+- When the container starts, an entrypoint script creates `/usr/share/nginx/html/env-config.js`
+- This allows you to override variables when running the container
+
+### Running the Docker Container Locally
+
+#### Option 1: Mount your .env file (Simplest)
+
+Build the image (no build args needed for this approach):
+```bash
+docker build -t kamili-app .
+```
+
+Run with your .env file mounted:
+```bash
+docker run -p 80:80 \
+  -v $(pwd)/.env:/app/.env:ro \
+  kamili-app
+```
+
+The container will automatically load variables from the mounted `.env` file.
+
+#### Option 2: Pass individual environment variables
+
+Build with environment variables:
+```bash
+docker build \
+  --build-arg VITE_STRAPI_URL=https://api.example.com \
+  --build-arg VITE_STRAPI_API_TOKEN=your-token \
+  --build-arg VITE_APP_NAME="Kamili App" \
+  --build-arg VITE_APP_URL=https://app.example.com \
+  -t kamili-app .
+```
+
+Run with runtime environment variables:
+```bash
+docker run -p 80:80 \
+  -e VITE_STRAPI_URL=https://api.example.com \
+  -e VITE_STRAPI_API_TOKEN=your-token \
+  -e VITE_APP_NAME="Kamili App" \
+  -e VITE_APP_URL=https://app.example.com \
+  kamili-app
+```
+
+#### Option 3: Use .env file with docker run
+
+Build the image:
+```bash
+docker build -t kamili-app .
+```
+
+Run with --env-file:
+```bash
+docker run -p 80:80 --env-file .env kamili-app
+```
+
+### Using with docker-compose
+
+#### Option 1: Mount .env file (Recommended)
+
+```yaml
+version: '3.8'
+
+services:
+  kamili-app:
+    build:
+      context: .
+    volumes:
+      - ./.env:/app/.env:ro
+    ports:
+      - "80:80"
+```
+
+#### Option 2: Use env_file directive
+
+```yaml
+version: '3.8'
+
+services:
+  kamili-app:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+```
+
+#### Option 3: Explicit environment variables
+
+```yaml
+version: '3.8'
+
+services:
+  kamili-app:
+    build:
+      context: .
+      args:
+        VITE_STRAPI_URL: ${VITE_STRAPI_URL}
+        VITE_STRAPI_API_TOKEN: ${VITE_STRAPI_API_TOKEN}
+        VITE_APP_NAME: ${VITE_APP_NAME}
+        VITE_APP_URL: ${VITE_APP_URL}
+    environment:
+      - VITE_STRAPI_URL=${VITE_STRAPI_URL}
+      - VITE_STRAPI_API_TOKEN=${VITE_STRAPI_API_TOKEN}
+      - VITE_APP_NAME=${VITE_APP_NAME}
+      - VITE_APP_URL=${VITE_APP_URL}
+    ports:
+      - "80:80"
+```
+
+## Security Notes
+
+- Never commit `.env` files to version control
+- The `.dockerignore` file prevents `.env` files from being copied into Docker images
+- Use GitHub Secrets for sensitive values in CI/CD
+- API tokens and secrets should be rotated regularly
