@@ -103,10 +103,10 @@ import AppTopbar from '@/components/layout/AppTopbar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import { useCategories } from '@/composables/useStrapi'
+import { getStrapiAssetUrl } from '@/utils/env'
 
 const { categories, loading, error, fetchCategories } = useCategories()
 
-const strapiUrl = import.meta.env.VITE_STRAPI_URL
 const currentPage = ref(1)
 const itemsPerPage = 8
 
@@ -139,12 +139,7 @@ const getCategoryImage = (category) => {
   if (!image?.data) return null
 
   const imageUrl = image.data.attributes.url
-  // Check if URL is already absolute
-  if (imageUrl.startsWith('http')) {
-    return imageUrl
-  }
-  // Otherwise, prepend Strapi URL
-  return `${strapiUrl}${imageUrl}`
+  return getStrapiAssetUrl(imageUrl)
 }
 </script>
 

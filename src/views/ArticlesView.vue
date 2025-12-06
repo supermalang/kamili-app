@@ -152,10 +152,10 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import { useCategories, useProducts } from '@/composables/useStrapi'
 import { useCart } from '@/composables/useCart'
+import { getStrapiAssetUrl } from '@/utils/env'
 
 const route = useRoute()
 const router = useRouter()
-const strapiUrl = import.meta.env.VITE_STRAPI_URL
 
 const { categories, loading: categoriesLoading, fetchCategories } = useCategories()
 const { products, loading: productsLoading, fetchProductsByCategory, fetchProducts } = useProducts()
@@ -256,10 +256,7 @@ const getCategoryImage = (category) => {
   if (!image?.data) return null
 
   const imageUrl = image.data.attributes.url
-  if (imageUrl.startsWith('http')) {
-    return imageUrl
-  }
-  return `${strapiUrl}${imageUrl}`
+  return getStrapiAssetUrl(imageUrl)
 }
 
 const getProductImage = (product) => {
@@ -268,10 +265,7 @@ const getProductImage = (product) => {
 
   // Image data is an array, get the first image
   const imageUrl = image.data[0].attributes.url
-  if (imageUrl.startsWith('http')) {
-    return imageUrl
-  }
-  return `${strapiUrl}${imageUrl}`
+  return getStrapiAssetUrl(imageUrl)
 }
 
 const addToCart = (product) => {

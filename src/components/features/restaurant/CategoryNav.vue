@@ -47,22 +47,17 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCategories } from '@/composables/useStrapi'
+import { getStrapiAssetUrl } from '@/utils/env'
 
 const { categories: strapiCategories, fetchCategories } = useCategories()
-const strapiUrl = import.meta.env.VITE_STRAPI_URL
 
 // Transform Strapi categories to the format needed by the carousel
 const categories = computed(() => {
   return strapiCategories.value.map(cat => {
     const imageData = cat.attributes?.image?.data
-    let imageUrl = null
-
-    if (imageData) {
-      const url = imageData.attributes?.url
-      if (url) {
-        imageUrl = url.startsWith('http') ? url : `${strapiUrl}${url}`
-      }
-    }
+    const imageUrl = imageData?.attributes?.url
+      ? getStrapiAssetUrl(imageData.attributes.url)
+      : null
 
     return {
       name: cat.attributes.name,

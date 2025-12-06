@@ -43,7 +43,36 @@ export function getAllEnv() {
   }
 }
 
+/**
+ * Get Strapi base URL
+ * @returns {string} Strapi base URL
+ */
+export function getStrapiUrl() {
+  return getEnv('VITE_STRAPI_URL', 'http://localhost:1337')
+}
+
+/**
+ * Build full URL for Strapi assets (images, files, etc.)
+ * Handles both relative paths (starting with /) and absolute URLs
+ * @param {string} path - The path to the asset (e.g., '/uploads/image.jpg' or 'https://cdn.example.com/image.jpg')
+ * @returns {string} Full URL to the asset
+ */
+export function getStrapiAssetUrl(path) {
+  if (!path) return null
+
+  // If it's already a full URL (starts with http:// or https://), return as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+
+  // Otherwise, prepend the Strapi base URL
+  const baseUrl = getStrapiUrl()
+  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`
+}
+
 export default {
   getEnv,
-  getAllEnv
+  getAllEnv,
+  getStrapiUrl,
+  getStrapiAssetUrl
 }
