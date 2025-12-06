@@ -71,6 +71,19 @@ import heroImage from '@/assets/images/homepage/hero-image.png'
   align-items: center;
 }
 
+/* Medium and large screens */
+@media (min-width: 768px) {
+  .hero-section {
+    max-height: 500px;
+    aspect-ratio: auto;
+  }
+
+  .hero-container {
+    padding-left: 10%;
+    padding-right: 10%;
+  }
+}
+
 .hero-content {
   display: flex;
   flex-direction: row;
