@@ -174,22 +174,22 @@ Create a comprehensive order detail page:
 ## 📁 Key Files to Know
 
 ### Layouts
-- [AdminLayout.vue](src/layouts/AdminLayout.vue) - Main admin layout with sidebar
+- [AdminLayout.vue](../src/layouts/AdminLayout.vue) - Main admin layout with sidebar
 
 ### Stores
-- [auth.js](src/stores/auth.js) - Authentication state management
+- [auth.js](../src/stores/auth.js) - Authentication state management
 
 ### Views
-- [LoginView.vue](src/views/admin/LoginView.vue) - Login page
-- [DashboardView.vue](src/views/admin/DashboardView.vue) - Analytics dashboard
-- [OrdersListView.vue](src/views/admin/orders/OrdersListView.vue) - Order management
+- [LoginView.vue](../src/views/admin/LoginView.vue) - Login page
+- [DashboardView.vue](../src/views/admin/DashboardView.vue) - Analytics dashboard
+- [OrdersListView.vue](../src/views/admin/orders/OrdersListView.vue) - Order management
 
 ### Utilities
-- [formatters.js](src/utils/formatters.js) - Formatting functions
-- [constants.js](src/utils/constants.js) - App constants
+- [formatters.js](../src/utils/formatters.js) - Formatting functions
+- [constants.js](../src/utils/constants.js) - App constants
 
 ### Router
-- [router/index.js](src/router/index.js) - Routes with auth guards
+- [router/index.js](../src/router/index.js) - Routes with auth guards
 
 ---
 
