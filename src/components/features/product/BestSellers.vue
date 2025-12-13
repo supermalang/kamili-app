@@ -5,35 +5,26 @@
         Nos Best-Sellers
       </h2>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center text-white py-8">
+        Chargement...
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="text-center text-red-400 py-8">
+        Erreur: {{ error }}
+      </div>
+
       <!-- Product Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <ProductCard
-          id="1"
-          name="L'Americain Beef"
-          :price="1500"
-          type="burger"
-          :image="baguettesImg"
-        />
-        <ProductCard
-          id="2"
-          name="Pizza Reine"
-          :price="1500"
-          type="pizza"
-          :image="pizzasImg"
-        />
-        <ProductCard
-          id="3"
-          name="L'Americain Beef"
-          :price="1500"
-          type="burger"
-          :image="tacosImg"
-        />
-        <ProductCard
-          id="4"
-          name="Pizza Reine"
-          :price="1500"
-          type="pizza"
-          :image="snacksImg"
+          v-for="product in bestSellers"
+          :key="product.id"
+          :id="product.id"
+          :name="product.attributes.name"
+          :price="product.attributes.price"
+          :type="product.attributes.type"
+          :image="getProductImage(product)"
         />
       </div>
 
@@ -54,12 +45,55 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import ProductCard from './ProductCard.vue'
-import pizzasImg from '@/assets/images/menu-categories/pizzas.png'
-import baguettesImg from '@/assets/images/menu-categories/baguettes.png'
-import snacksImg from '@/assets/images/menu-categories/snacks.png'
-import tacosImg from '@/assets/images/menu-categories/tacos.png'
+import { useProducts } from '@/composables/useStrapi'
+import { getEnv } from '@/utils/env'
+
+const { products, loading, error, fetchProducts } = useProducts()
+
+const bestSellers = computed(() => {
+  // Get the products array - handle both {data: [...]} and [...] structures
+  const productsArray = Array.isArray(products.value) ? products.value : products.value?.data
+
+  if (!productsArray) return []
+
+  const filtered = productsArray.filter(product => product.attributes.isBestSeller)
+  return filtered.slice(0, 4)
+})
+
+const getProductImage = (product) => {
+  const imageData = product.attributes.image?.data
+  if (!imageData) return null
+
+  // Handle both single object and array responses
+  const image = Array.isArray(imageData) ? imageData[0] : imageData
+
+  if (image && image.attributes && image.attributes.url) {
+    const imageUrl = image.attributes.url
+    const strapiUrl = getEnv('VITE_STRAPI_URL', 'http://localhost:1337').replace(/\/$/, '')
+    return imageUrl.startsWith('http') ? imageUrl : `${strapiUrl}${imageUrl}`
+  }
+  return null
+}
+
+onMounted(async () => {
+  try {
+    await fetchProducts({
+      filters: {
+        isBestSeller: {
+          $eq: true
+        }
+      },
+      pagination: {
+        limit: 4
+      }
+    })
+  } catch (err) {
+    console.error('Failed to fetch best sellers:', err)
+  }
+})
 </script>
 
 <style scoped>

@@ -6,7 +6,7 @@ import { getEnv } from '@/utils/env'
  * Strapi API Configuration
  */
 const config = {
-  url: getEnv('VITE_STRAPI_URL', 'http://localhost:1337'),
+  url: getEnv('VITE_STRAPI_URL', 'http://localhost:1337').replace(/\/$/, ''),
   apiToken: getEnv('VITE_STRAPI_API_TOKEN', '')
 }
 
@@ -67,6 +67,37 @@ export const strapiService = {
     async findOne(id, params = {}) {
       const queryString = buildQueryString(params)
       const response = await api.get(`/products/${id}${queryString}`)
+      return response.data
+    },
+
+    /**
+     * Create a new product
+     * @param {Object} data - Product data
+     * @returns {Promise} Created product
+     */
+    async create(data) {
+      const response = await api.post('/products', { data })
+      return response.data
+    },
+
+    /**
+     * Update a product
+     * @param {String|Number} id - Product ID
+     * @param {Object} data - Product data
+     * @returns {Promise} Updated product
+     */
+    async update(id, data) {
+      const response = await api.put(`/products/${id}`, { data })
+      return response.data
+    },
+
+    /**
+     * Delete a product
+     * @param {String|Number} id - Product ID
+     * @returns {Promise} Deleted product
+     */
+    async delete(id) {
+      const response = await api.delete(`/products/${id}`)
       return response.data
     },
 
@@ -229,6 +260,20 @@ export const strapiService = {
       }
       const queryString = buildQueryString(mergedParams)
       const response = await api.get(`/loyalty-programs${queryString}`)
+      return response.data
+    }
+  },
+
+  // Upload API
+  upload: {
+    /**
+     * Get all uploaded files
+     * @param {Object} params - Query parameters
+     * @returns {Promise} Files data
+     */
+    async getFiles(params = {}) {
+      const queryString = buildQueryString(params)
+      const response = await api.get(`/upload/files${queryString}`)
       return response.data
     }
   }
