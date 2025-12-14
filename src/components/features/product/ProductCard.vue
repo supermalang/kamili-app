@@ -42,7 +42,8 @@
 </template>
 
 <script setup>
-import { useCart } from '@/composables/useCart'
+import { useCartStore } from '@/stores/cart'
+import strapiService from '@/services/strapi'
 
 const props = defineProps({
   id: {
@@ -67,16 +68,49 @@ const props = defineProps({
   }
 })
 
-const { addToCart, formatPrice } = useCart()
+const cartStore = useCartStore()
 
-const handleAddToCart = () => {
-  addToCart({
-    id: props.id,
-    name: props.name,
-    price: props.price,
-    type: props.type,
-    image: props.image
-  })
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price) + ' FCFA'
+}
+
+const handleAddToCart = async () => {
+  // Fetch the full product details to get option groups
+  try {
+    const response = await strapiService.products.findOne(props.id, {
+      populate: {
+        image: true,
+        categories: true,
+        optionGroups: {
+          populate: ['options']
+        }
+      }
+    })
+
+    const product = response.data
+
+    cartStore.addItem({
+      id: product.id,
+      name: product.attributes.name,
+      price: product.attributes.price,
+      image: props.image,
+      optionGroups: product.attributes.optionGroups || []
+    })
+  } catch (error) {
+    console.error('Failed to fetch product:', error)
+    // Fallback: add without options
+    cartStore.addItem({
+      id: props.id,
+      name: props.name,
+      price: props.price,
+      image: props.image,
+      optionGroups: []
+    })
+  }
 }
 </script>
 

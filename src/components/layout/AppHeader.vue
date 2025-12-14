@@ -53,22 +53,23 @@
     </MobileDrawer>
 
     <!-- Cart Drawer -->
-    <CartDrawer :isOpen="isCartOpen" @close="closeCartDrawer" />
+    <CartDrawer />
   </header>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppNavigation from './AppNavigation.vue'
 import MobileDrawer from './MobileDrawer.vue'
 import CartDrawer from '@/components/features/cart/CartDrawer.vue'
-import { useCart } from '@/composables/useCart'
+import { useCartStore } from '@/stores/cart'
 import logo from '@/assets/images/logo-horizontal-compose-kamili.png'
 
 const isDrawerOpen = ref(false)
+const cartStore = useCartStore()
 
-const { isCartOpen, itemCount, openCart, closeCart } = useCart()
+const itemCount = computed(() => cartStore.itemCount)
 
 const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value
@@ -79,15 +80,11 @@ const closeDrawer = () => {
 }
 
 const toggleCartDrawer = () => {
-  if (isCartOpen.value) {
-    closeCart()
+  if (cartStore.isDrawerOpen) {
+    cartStore.closeDrawer()
   } else {
-    openCart()
+    cartStore.openDrawer()
   }
-}
-
-const closeCartDrawer = () => {
-  closeCart()
 }
 </script>
 

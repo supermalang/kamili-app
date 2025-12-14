@@ -84,37 +84,15 @@
               </p>
               <p class="product-price mb-4">{{ formatPrice(product.attributes.price) }}</p>
 
-              <!-- Available product - show quantity controls or add button -->
+              <!-- Available product - show add button -->
               <div v-if="product.attributes.is_enabled">
-                <!-- Show add button if not in cart -->
                 <button
-                  v-if="getProductQuantity(product.id) === 0"
                   @click="addToCart(product)"
                   class="add-to-cart-btn w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded flex items-center justify-center gap-2 transition-colors"
                 >
                   <span>+</span>
                   <span>Ajouter</span>
                 </button>
-
-                <!-- Show quantity controls if in cart -->
-                <div
-                  v-else
-                  class="flex items-center justify-between w-full bg-red-600 text-white rounded overflow-hidden"
-                >
-                  <button
-                    @click="decrementQuantity(product.id)"
-                    class="px-4 py-2 hover:bg-red-700 transition-colors flex-shrink-0"
-                  >
-                    <span class="text-xl font-semibold">−</span>
-                  </button>
-                  <span class="px-4 py-2 font-semibold">{{ getProductQuantity(product.id) }}</span>
-                  <button
-                    @click="incrementQuantity(product.id)"
-                    class="px-4 py-2 hover:bg-red-700 transition-colors flex-shrink-0"
-                  >
-                    <span class="text-xl font-semibold">+</span>
-                  </button>
-                </div>
               </div>
 
               <!-- Unavailable product -->
@@ -151,24 +129,27 @@ import AppTopbar from '@/components/layout/AppTopbar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import { useCategories, useProducts } from '@/composables/useStrapi'
-import { useCart } from '@/composables/useCart'
+import { useCartStore } from '@/stores/cart'
 import { getStrapiAssetUrl } from '@/utils/env'
+import strapiService from '@/services/strapi'
 
 const route = useRoute()
 const router = useRouter()
 
 const { categories, loading: categoriesLoading, fetchCategories } = useCategories()
 const { products, loading: productsLoading, fetchProductsByCategory, fetchProducts } = useProducts()
-const { addToCart: addToCartComposable, incrementQuantity, decrementQuantity, cartItems, formatPrice } = useCart()
+const cartStore = useCartStore()
 
 const selectedCategory = ref(null)
 const loading = ref(false)
 const error = ref(null)
 
-// Get quantity of a product in cart
-const getProductQuantity = (productId) => {
-  const cartItem = cartItems.value.find(item => item.id === productId)
-  return cartItem ? cartItem.quantity : 0
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price) + ' FCFA'
 }
 
 onMounted(async () => {
@@ -268,14 +249,39 @@ const getProductImage = (product) => {
   return getStrapiAssetUrl(imageUrl)
 }
 
-const addToCart = (product) => {
-  addToCartComposable({
-    id: product.id,
-    name: product.attributes.name,
-    price: product.attributes.price,
-    type: product.attributes.type,
-    image: getProductImage(product)
-  })
+const addToCart = async (product) => {
+  try {
+    // Fetch full product details including option groups
+    const response = await strapiService.products.findOne(product.id, {
+      populate: {
+        image: true,
+        categories: true,
+        optionGroups: {
+          populate: ['options']
+        }
+      }
+    })
+
+    const fullProduct = response.data
+
+    cartStore.addItem({
+      id: fullProduct.id,
+      name: fullProduct.attributes.name,
+      price: fullProduct.attributes.price,
+      image: getProductImage(product),
+      optionGroups: fullProduct.attributes.optionGroups || []
+    })
+  } catch (error) {
+    console.error('Failed to fetch product:', error)
+    // Fallback: add without options
+    cartStore.addItem({
+      id: product.id,
+      name: product.attributes.name,
+      price: product.attributes.price,
+      image: getProductImage(product),
+      optionGroups: []
+    })
+  }
 }
 </script>
 

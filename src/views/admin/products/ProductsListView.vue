@@ -202,6 +202,110 @@
             </div>
           </div>
         </el-form-item>
+
+        <!-- Product Options -->
+        <el-divider content-position="left">Options du produit</el-divider>
+
+        <div class="space-y-4">
+          <div
+            v-for="(group, groupIndex) in formData.optionGroups"
+            :key="groupIndex"
+            class="border rounded p-4"
+          >
+            <div class="flex items-start gap-4 mb-4">
+              <el-input
+                v-model="group.name"
+                placeholder="Nom du groupe (ex: Sauces, Extras)"
+                class="flex-1"
+              />
+              <el-button
+                type="danger"
+                :icon="Delete"
+                circle
+                @click="removeOptionGroup(groupIndex)"
+              />
+            </div>
+
+            <div class="mb-4">
+              <el-form-item label="Requis" class="mb-3">
+                <el-switch v-model="group.isRequired" />
+              </el-form-item>
+              <div class="grid grid-cols-2 gap-4">
+                <el-form-item label="Min sélections" class="mb-0">
+                  <el-input-number
+                    v-model="group.minSelections"
+                    :min="0"
+                    :max="100"
+                    controls-position="right"
+                    size="default"
+                    class="custom-input-number"
+                  />
+                </el-form-item>
+                <el-form-item label="Max sélections (0 = illimité)" class="mb-0">
+                  <el-input-number
+                    v-model="group.maxSelections"
+                    :min="0"
+                    :max="100"
+                    controls-position="right"
+                    size="default"
+                    class="custom-input-number"
+                  />
+                </el-form-item>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div
+                v-for="(option, optionIndex) in group.options"
+                :key="optionIndex"
+                class="flex items-center gap-2"
+              >
+                <el-input
+                  v-model="option.name"
+                  placeholder="Nom de l'option"
+                  class="flex-1"
+                  size="small"
+                />
+                <el-input-number
+                  v-model="option.price"
+                  :min="0"
+                  :step="100"
+                  placeholder="Prix"
+                  size="small"
+                  class="w-32"
+                />
+                <span class="text-sm text-gray-500">FCFA</span>
+                <el-switch
+                  v-model="option.isAvailable"
+                  active-text="Dispo"
+                  inactive-text="Indispo"
+                  size="small"
+                />
+                <el-button
+                  type="danger"
+                  :icon="Delete"
+                  circle
+                  size="small"
+                  @click="removeOption(groupIndex, optionIndex)"
+                />
+              </div>
+              <el-button
+                type="primary"
+                size="small"
+                @click="addOption(groupIndex)"
+                text
+              >
+                <el-icon class="mr-1"><Plus /></el-icon>
+                Ajouter une option
+              </el-button>
+            </div>
+          </div>
+
+          <el-button type="primary" @click="addOptionGroup" plain>
+            <el-icon class="mr-1"><Plus /></el-icon>
+            Ajouter un groupe d'options
+          </el-button>
+        </div>
       </el-form>
 
       <template #footer>
@@ -293,7 +397,8 @@ const formData = ref({
   isBestSeller: false,
   isAvailable: true,
   imageId: null,
-  imagePreview: null
+  imagePreview: null,
+  optionGroups: []
 })
 
 const strapiUrl = getEnv('VITE_STRAPI_URL', 'http://localhost:1337').replace(/\/$/, '')
@@ -350,7 +455,13 @@ const fetchProducts = async () => {
   loading.value = true
   try {
     const response = await strapiService.products.find({
-      populate: ['image', 'categories'],
+      populate: {
+        image: true,
+        categories: true,
+        optionGroups: {
+          populate: ['options']
+        }
+      },
       sort: ['createdAt:desc'],
       pagination: {
         page: currentPage.value,
@@ -378,7 +489,8 @@ const openCreateDialog = () => {
     isBestSeller: false,
     isAvailable: true,
     imageId: null,
-    imagePreview: null
+    imagePreview: null,
+    optionGroups: []
   }
   dialogVisible.value = true
 }
@@ -390,6 +502,7 @@ const openEditDialog = (product) => {
   const imageData = product.attributes.image?.data
   const imagePreview = imageData ? getProductImage(product) : null
   const productCategories = product.attributes.categories?.data?.map(c => c.id) || []
+  const optionGroups = product.attributes.optionGroups || []
 
   formData.value = {
     name: product.attributes.name,
@@ -399,7 +512,18 @@ const openEditDialog = (product) => {
     isBestSeller: product.attributes.isBestSeller || false,
     isAvailable: product.attributes.isAvailable !== false,
     imageId: imageData?.id || null,
-    imagePreview: imagePreview
+    imagePreview: imagePreview,
+    optionGroups: optionGroups.map(group => ({
+      name: group.name,
+      isRequired: group.isRequired || false,
+      minSelections: group.minSelections || 0,
+      maxSelections: group.maxSelections || 0,
+      options: (group.options || []).map(opt => ({
+        name: opt.name,
+        price: opt.price || 0,
+        isAvailable: opt.isAvailable !== false
+      }))
+    }))
   }
   dialogVisible.value = true
 }
@@ -521,6 +645,36 @@ const selectMediaFromLibrary = () => {
   mediaLibraryVisible.value = false
 }
 
+// Option Groups Management
+const addOptionGroup = () => {
+  const newGroup = {
+    name: '',
+    isRequired: false,
+    minSelections: 0,
+    maxSelections: 1,
+    options: []
+  }
+  formData.value.optionGroups.push(newGroup)
+  console.log('Added new option group:', newGroup)
+  console.log('Total option groups:', formData.value.optionGroups.length)
+}
+
+const removeOptionGroup = (index) => {
+  formData.value.optionGroups.splice(index, 1)
+}
+
+const addOption = (groupIndex) => {
+  formData.value.optionGroups[groupIndex].options.push({
+    name: '',
+    price: 0,
+    isAvailable: true
+  })
+}
+
+const removeOption = (groupIndex, optionIndex) => {
+  formData.value.optionGroups[groupIndex].options.splice(optionIndex, 1)
+}
+
 // Generate slug from name with timestamp suffix
 const generateSlug = (name) => {
   const timestamp = Date.now()
@@ -548,13 +702,16 @@ const handleSubmit = async () => {
         categories: formData.value.categories,
         isBestSeller: formData.value.isBestSeller,
         isAvailable: formData.value.isAvailable,
-        slug: generateSlug(formData.value.name)
+        slug: generateSlug(formData.value.name),
+        optionGroups: formData.value.optionGroups
       }
 
       // Add image if uploaded
       if (formData.value.imageId) {
         productData.image = formData.value.imageId
       }
+
+      console.log('Submitting product data:', JSON.stringify(productData, null, 2))
 
       if (isEditing.value) {
         await strapiService.products.update(editingId.value, productData)
@@ -566,8 +723,24 @@ const handleSubmit = async () => {
       dialogVisible.value = false
       await fetchProducts()
     } catch (error) {
-      ElMessage.error(isEditing.value ? 'Erreur lors de la modification' : 'Erreur lors de la création')
       console.error('Failed to save product:', error)
+      console.error('Error response:', error.response?.data)
+      console.error('Error status:', error.response?.status)
+
+      let errorMessage = isEditing.value ? 'Erreur lors de la modification' : 'Erreur lors de la création'
+
+      if (error.response?.data?.error) {
+        const strapiError = error.response.data.error
+        if (strapiError.message) {
+          errorMessage += ': ' + strapiError.message
+        }
+        if (strapiError.details?.errors) {
+          const details = strapiError.details.errors.map(e => e.message).join(', ')
+          errorMessage += ' - ' + details
+        }
+      }
+
+      ElMessage.error(errorMessage)
     } finally {
       saving.value = false
     }
@@ -645,5 +818,52 @@ onMounted(async () => {
 
 :deep(.image-uploader .el-upload:hover) {
   opacity: 0.8;
+}
+
+/* Custom input number styling */
+.custom-input-number {
+  width: 80px !important;
+}
+
+:deep(.custom-input-number .el-input__wrapper) {
+  width: 80px !important;
+  padding: 1px;
+}
+
+:deep(.custom-input-number .el-input__inner) {
+  text-align: center !important;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 28px 0 8px;
+}
+
+:deep(.custom-input-number .el-input-number__decrease),
+:deep(.custom-input-number .el-input-number__increase) {
+  position: absolute;
+  right: 1px;
+  width: 24px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  border-left: 1px solid #dcdfe6;
+}
+
+:deep(.custom-input-number .el-input-number__decrease) {
+  bottom: 1px;
+  border-top: 1px solid #dcdfe6;
+}
+
+:deep(.custom-input-number .el-input-number__increase) {
+  top: 1px;
+}
+
+:deep(.custom-input-number .el-input-number__decrease:hover),
+:deep(.custom-input-number .el-input-number__increase:hover) {
+  color: #409eff;
+  background-color: #ecf5ff;
 }
 </style>
