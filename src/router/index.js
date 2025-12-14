@@ -107,6 +107,31 @@ const routes = [
         component: () => import('@/views/admin/deliveries/DeliveriesView.vue')
       },
       {
+        path: 'delivery/locations',
+        name: 'admin-delivery-locations',
+        component: () => import('@/views/admin/delivery/LocationsView.vue')
+      },
+      {
+        path: 'delivery/options',
+        name: 'admin-delivery-options',
+        component: () => import('@/views/admin/delivery/OptionsView.vue')
+      },
+      {
+        path: 'delivery/pricing',
+        name: 'admin-delivery-pricing',
+        component: () => import('@/views/admin/delivery/PricingView.vue')
+      },
+      {
+        path: 'delivery/promotions',
+        name: 'admin-delivery-promotions',
+        component: () => import('@/views/admin/delivery/PromotionsView.vue')
+      },
+      {
+        path: 'delivery/orders',
+        name: 'admin-delivery-orders',
+        component: () => import('@/views/admin/delivery/OrdersView.vue')
+      },
+      {
         path: 'customers',
         name: 'admin-customers',
         component: () => import('@/views/admin/customers/CustomersListView.vue')

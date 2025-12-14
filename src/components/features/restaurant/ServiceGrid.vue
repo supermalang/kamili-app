@@ -62,19 +62,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import DeliveryModal from '@/components/common/DeliveryModal.vue'
 import TakeawayModal from '@/components/common/TakeawayModal.vue'
-import { useCart } from '@/composables/useCart'
+import { useCartStore } from '@/stores/cart'
 import livraisonIcon from '@/assets/images/icons/livraison.png'
 import aEmporterIcon from '@/assets/images/icons/a_emporter.png'
 import boutiqueIcon from '@/assets/images/icons/boutique.png'
 import fideliteIcon from '@/assets/images/icons/fidelite.png'
 
-// Get cart item count from cart composable
-const { itemCount } = useCart()
-const cartItemCount = itemCount
+// Get cart store
+const cartStore = useCartStore()
+const cartItemCount = computed(() => cartStore.itemCount)
 
 // Delivery Modal State
 const isDeliveryModalOpen = ref(false)
@@ -89,6 +89,9 @@ const closeDeliveryModal = () => {
 
 const handleDeliverySubmit = (formData) => {
   console.log('Delivery form submitted:', formData)
+  // Store delivery type and info in cart
+  cartStore.setDeliveryType('delivery')
+  cartStore.setDeliveryInfo(formData)
   // Form submission logic is handled in DeliveryModal
   // It will navigate to cart page automatically
   closeDeliveryModal()
@@ -107,10 +110,9 @@ const closeTakeawayModal = () => {
 
 const handleTakeawaySubmit = (formData) => {
   console.log('Takeaway form submitted:', formData)
-  // You can add additional logic here, such as:
-  // - Navigate to menu or cart
-  // - Store the data in a global state
-  // - Make an API call
+  // Store takeaway type and info in cart
+  cartStore.setDeliveryType('takeaway')
+  cartStore.setDeliveryInfo(formData)
   closeTakeawayModal()
 }
 </script>

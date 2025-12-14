@@ -252,6 +252,14 @@
 
       <!-- Footer with Summary and Checkout -->
       <div v-if="cartStore.items.length > 0 && !cartStore.pendingProduct" class="border-t p-4 space-y-4 bg-gray-50">
+        <!-- Delivery Type Badge -->
+        <div v-if="cartStore.deliveryType" class="flex items-center gap-2 text-sm">
+          <span class="px-3 py-1 rounded-full text-white font-medium"
+            :class="cartStore.deliveryType === 'delivery' ? 'bg-teal-500' : 'bg-yellow-500'">
+            {{ cartStore.deliveryType === 'delivery' ? '🚚 Livraison' : '🛍️ À emporter' }}
+          </span>
+        </div>
+
         <!-- Summary -->
         <div class="space-y-2 text-sm">
           <div class="flex justify-between text-gray-700">
@@ -259,8 +267,8 @@
             <span>{{ formatPrice(cartStore.subtotal) }}</span>
           </div>
           <div class="flex justify-between text-gray-700">
-            <span>Livraison</span>
-            <span>{{ formatPrice(cartStore.deliveryFee) }}</span>
+            <span>{{ cartStore.deliveryType === 'takeaway' ? 'Frais' : 'Livraison' }}</span>
+            <span>{{ cartStore.deliveryFee === 0 ? 'Gratuit' : formatPrice(cartStore.deliveryFee) }}</span>
           </div>
           <div class="flex justify-between font-semibold text-gray-900 text-base pt-2 border-t">
             <span>Total</span>

@@ -6,6 +6,8 @@ export const useCartStore = defineStore('cart', () => {
   const items = ref([])
   const isDrawerOpen = ref(false)
   const pendingProduct = ref(null) // Product being configured with options
+  const deliveryType = ref(null) // 'delivery' or 'takeaway'
+  const deliveryInfo = ref(null) // Delivery/takeaway form data
 
   // Getters
   const itemCount = computed(() => {
@@ -30,6 +32,9 @@ export const useCartStore = defineStore('cart', () => {
   })
 
   const deliveryFee = computed(() => {
+    // No delivery fee for takeaway
+    if (deliveryType.value === 'takeaway') return 0
+    // Free delivery for orders >= 10000 FCFA
     return subtotal.value >= 10000 ? 0 : 1000
   })
 
@@ -170,11 +175,26 @@ export const useCartStore = defineStore('cart', () => {
     return total
   }
 
+  const setDeliveryType = (type) => {
+    deliveryType.value = type
+  }
+
+  const setDeliveryInfo = (info) => {
+    deliveryInfo.value = info
+  }
+
+  const clearDeliveryInfo = () => {
+    deliveryType.value = null
+    deliveryInfo.value = null
+  }
+
   return {
     // State
     items,
     isDrawerOpen,
     pendingProduct,
+    deliveryType,
+    deliveryInfo,
 
     // Getters
     itemCount,
@@ -194,6 +214,9 @@ export const useCartStore = defineStore('cart', () => {
     clearCart,
     openDrawer,
     closeDrawer,
-    getItemTotal
+    getItemTotal,
+    setDeliveryType,
+    setDeliveryInfo,
+    clearDeliveryInfo
   }
 })

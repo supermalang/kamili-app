@@ -121,7 +121,11 @@ import {
   Bell,
   ArrowDown,
   SwitchButton,
-  View
+  View,
+  Location,
+  Tickets,
+  Money,
+  Discount
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -167,6 +171,36 @@ const menuItems = [
     label: 'Livraisons',
     icon: Van,
     route: { name: 'admin-deliveries' }
+  },
+  {
+    name: 'delivery-locations',
+    label: 'Zones de livraison',
+    icon: Location,
+    route: { name: 'admin-delivery-locations' }
+  },
+  {
+    name: 'delivery-options',
+    label: 'Options livraison',
+    icon: Tickets,
+    route: { name: 'admin-delivery-options' }
+  },
+  {
+    name: 'delivery-pricing',
+    label: 'Tarifs livraison',
+    icon: Money,
+    route: { name: 'admin-delivery-pricing' }
+  },
+  {
+    name: 'delivery-promotions',
+    label: 'Promotions livraison',
+    icon: Discount,
+    route: { name: 'admin-delivery-promotions' }
+  },
+  {
+    name: 'delivery-orders',
+    label: 'Commandes livraison',
+    icon: ShoppingCart,
+    route: { name: 'admin-delivery-orders' }
   },
   {
     name: 'customers',
